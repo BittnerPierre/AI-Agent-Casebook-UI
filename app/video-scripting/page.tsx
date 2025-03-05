@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 import { Message } from '../types';
-import { useStream,  } from "@langchain/langgraph-sdk/react";
-import { marked } from "marked";
-import AIMessage from '../components/AIMessage';
-import { conversationStarters } from "../../components/conversation-starters";
+import { useStream } from "@langchain/langgraph-sdk/react";
 import { useSearchParams, useRouter } from 'next/navigation';
-
+import MainChatMessages from '../components/MainChatMessages';
+import InternalAgentsAccordion from '../components/InternalAgentsAccordion';
 
 export default function VideoScriptingPage() {
   const searchParams = useSearchParams();
@@ -16,10 +14,10 @@ export default function VideoScriptingPage() {
     searchParams.get('threadId') || null
   );
 
-  const thread = useStream<
-  { messages: Message[]
-   }>({
-    apiUrl: "http://localhost:2024",
+  const thread = useStream<{
+    messages: Message[]
+  }>({
+    apiUrl: "http://localhost:2024", 
     assistantId: "video_script",
     threadId: threadId,
     onThreadId: (newThreadId) => {
@@ -30,39 +28,37 @@ export default function VideoScriptingPage() {
     }
   });
 
+  // Find the index of the last user message to split messages
+  const lastUserMessageIndex = thread.messages
+    ? [...thread.messages].reverse().findIndex(msg => msg.type === 'human')
+    : -1;
+
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] bg-black text-gray-200">
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-4">
-          {thread.messages?.filter(message => 
-            message.type !== "tool" && 
-            !(message.type === "ai" && !message.content)
-          ).map((message, index) => (
-            <div
-              key={`${message.id}-${index}`}
-              className={`flex ${
-                message.type === "human" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg p-4 ${
-                  message.type === "human"
-                    ? "bg-zinc-800 text-gray-200"
-                    : "bg-zinc-900 border border-zinc-800 text-gray-300"
-                }`}
-              >
-                {message.type === "ai" ? (
-                  <AIMessage 
-                    message={message} 
-                    assistantId="video_script"
-                    threadId={threadId || undefined} 
-                  />
-                ) : (
-                  message.content as string
-                )}
-              </div>
-            </div>
-          ))}
+          {/* Main chat messages up to the last user message - only host-producer and user */}
+          <MainChatMessages 
+            messages={thread.messages?.slice(0, thread.messages.length - lastUserMessageIndex)
+              .filter(msg => msg.type === 'human' || (msg.type === 'ai' && msg.name === 'host-producer')) || []}
+            threadId={threadId || undefined}
+          />
+          
+          {/* Internal agents accordion after the last user message */}
+          {thread.messages && thread.messages.length > 0 && (
+            <InternalAgentsAccordion 
+              messages={thread.messages?.slice(thread.messages.length - lastUserMessageIndex)
+                .filter(msg => msg.type === 'ai' && ['researcher', 'writer', 'planner', 'reviewer'].includes(msg.name || ''))}
+              isLoading={thread.isLoading}
+            />
+          )}
+          
+          {/* Remaining main chat messages - only host-producer and user */}
+          <MainChatMessages 
+            messages={thread.messages?.slice(thread.messages.length - lastUserMessageIndex)
+              .filter(msg => msg.type === 'human' || (msg.type === 'ai' && msg.name === 'host-producer')) || []}
+            threadId={threadId || undefined}
+          />
         </div>
       </div>
 
@@ -80,7 +76,7 @@ export default function VideoScriptingPage() {
               }] 
             }, {
               config: {
-                recursion_limit: 99  // Vos paramètres personnalisés
+                recursion_limit: 99
               }
             });
           }}
@@ -89,7 +85,7 @@ export default function VideoScriptingPage() {
           <input
             type="text"
             name="message"
-            className="flex-1 bg-zinc-900 text-gray-200 border border-zinc-800 rounded-lg px-4 py-3 focus:outline-none focus:border-zinc-700"
+            className="flex-1 bg-zinc-900 text-gray-200 border border-zinc-800 rounded-lg px-4 py-3 focus:outline-none focus:border-zinc-700 focus:ring-0"
             placeholder="Describe your video script needs..."
           />
           {thread.isLoading ? (
@@ -112,4 +108,4 @@ export default function VideoScriptingPage() {
       </div>
     </div>
   );
-} 
+}

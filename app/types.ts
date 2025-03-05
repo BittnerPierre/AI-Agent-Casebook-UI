@@ -1,12 +1,12 @@
 export interface Message {
-  role: 'user' | 'assistant';
+  type: 'human' | 'ai' | 'tool';
   content: string;
   id?: string;
-
+  name: string;
   createdAt?: string;
   metadata?: any;
 }
 
-export interface AIMessage extends Omit<Message, 'role'> {
-  role: 'assistant';
+export interface AIMessage extends Omit<Message, 'type'> {
+  type: 'ai';
 } 

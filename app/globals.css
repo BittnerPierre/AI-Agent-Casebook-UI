@@ -19,3 +19,9 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer base {
+  input[type="text"] {
+    @apply bg-zinc-900 dark:bg-zinc-900;
+  }
+}

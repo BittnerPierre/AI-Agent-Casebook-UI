@@ -1,38 +1,26 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Navigation from "./components/Navigation";
+import "./globals.css"
+import { Inter } from 'next/font/google'
+import { Metadata } from "next"
+import Navigation from './components/Navigation'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AI Assistants",
-  description: "Customer Onboarding and Video Scripting Assistants",
-};
+  title: "AI Engineering Bootcamp | Learn to Build LLM-Powered Applications",
+  description: "Become an AI Engineer in 3 days. Build LLM-powered applications and autonomous AI agents with our comprehensive bootcamp.",
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={inter.className}>
         <Navigation />
-        <main className="container mx-auto px-4">
-          {children}
-        </main>
+        {children}
       </body>
     </html>
-  );
+  )
 }

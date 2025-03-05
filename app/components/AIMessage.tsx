@@ -47,10 +47,9 @@ export default function AIMessage({ message, assistantId, threadId: initialThrea
       
       <button
         onClick={() => setShowRaw(!showRaw)}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 
-          transition-opacity duration-200 text-xs text-gray-500 hover:text-gray-300"
+        className="absolute top-2 right-2 text-xs text-gray-500 hover:text-gray-300"
       >
-        {showRaw ? 'Hide Raw' : 'Show Raw'}
+        {showRaw ? 'Hide Raw' : 'Show Raw'} (Debug)
       </button>
 
       {showRaw && (
